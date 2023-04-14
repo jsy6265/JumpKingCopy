@@ -4,56 +4,60 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
 
-public class EndGame : MonoBehaviour
+namespace JumpKingCopy
 {
-    public GameObject endding;
-    public TextMeshProUGUI clearTimeText;
-
-    int hour;
-    int min;
-    int sec;
-
-    private void Start()
+    public class EndGame : MonoBehaviour
     {
-        GameManager.instance.endGame = this;
-    }
+        public GameObject endding;
+        public TextMeshProUGUI clearTimeText;
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        if(collision.gameObject.tag == "Player")
+        int hour;
+        int min;
+        int sec;
+
+        private void Start()
         {
-            GameManager.instance.isEnd = true;
+            GameManager.instance.endGame = this;
         }
-    }
 
-    public void RestartGame()
-    {
-        GameManager.instance.timmer = 0;
-        GameManager.instance.isEnd = false;
-        SceneManager.LoadScene(0);
-    }
-
-    public void ExitGame()
-    {
-        Application.Quit();
-    }
-
-    public void End()
-    {
-        endding.SetActive(true);
-
-        min = GameManager.instance.timmer / 60;
-        if (min > 60)
+        private void OnCollisionEnter2D(Collision2D collision)
         {
-            hour = GameManager.instance.timmer / 60;
+            if (collision.gameObject.tag == "Player")
+            {
+                GameManager.instance.isEnd = true;
+            }
         }
-        else
+
+        public void RestartGame()
         {
-            hour = 0;
+            GameManager.instance.timmer = 0;
+            GameManager.instance.isEnd = false;
+            SceneManager.LoadScene(0);
         }
-        sec = GameManager.instance.timmer % 60;
-        clearTimeText.SetText(hour + " : " + min + " : " + sec);
+
+        public void ExitGame()
+        {
+            Application.Quit();
+        }
+
+        public void End()
+        {
+            endding.SetActive(true);
+
+            min = GameManager.instance.timmer / 60;
+            if (min > 60)
+            {
+                hour = GameManager.instance.timmer / 60;
+            }
+            else
+            {
+                hour = 0;
+            }
+            sec = GameManager.instance.timmer % 60;
+            clearTimeText.SetText(hour + " : " + min + " : " + sec);
+        }
+
+
     }
-
-
 }
+

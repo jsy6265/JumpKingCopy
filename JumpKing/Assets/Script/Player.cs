@@ -2,140 +2,146 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Player : MonoBehaviour
+namespace JumpKingCopy
 {
-    public int playerSpeed = 5;
-   
-    public float jumpSpeed;
-    public float maxJump;
-
-    public bool isCharge;
-    public bool isfolling;
-
-    Rigidbody2D rigid;
-    Animator animator;
-
-    public ParticleSystem chargeParticle;
-    public Transform transf;
-
-    private void Awake()
+    public class Player : MonoBehaviour
     {
-        rigid = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-        transf = GetComponent<Transform>();
-    }
+        public int playerSpeed = 5;
 
-    private void FixedUpdate()
-    {
-        CheakJump();
-    }
+        public float jumpSpeed;
+        public float maxJump;
 
-    // Update is called once per frame
-    void Update()
-    {
-       
-        PlayerMove();
-        PlayerJump();
-    }
+        public bool isCharge;
+        public bool isfolling;
 
+        Rigidbody2D rigid;
+        Animator animator;
 
-    void PlayerMove()
-    {
-        if (Input.GetAxisRaw("Horizontal") > 0 && isCharge == false && isfolling == false)
+        public ParticleSystem chargeParticle;
+        public Transform transf;
+
+        private void Awake()
         {
-            transform.Translate(new Vector3(playerSpeed * Time.deltaTime, 0, 0));
-        }
-        if (Input.GetAxisRaw("Horizontal") < 0 && isCharge == false && isfolling == false)
-        {
-            transform.Translate(new Vector3(-playerSpeed * Time.deltaTime, 0, 0));
+            rigid = GetComponent<Rigidbody2D>();
+            animator = GetComponent<Animator>();
+            transf = GetComponent<Transform>();
         }
 
-        if (Input.GetKey(KeyCode.Space) && isfolling == false)
+        private void FixedUpdate()
         {
-            isCharge = true;
-            StartCoroutine(Jumpcharging());
+            CheakJump();
         }
-        
-    }
 
-    void PlayerJump()
-    {
-        if (Input.GetKeyUp(KeyCode.Space))
+        // Update is called once per frame
+        void Update()
         {
-            chargeParticle.Stop();
-            isCharge = false;
-            if (Input.GetAxisRaw("Horizontal") > 0)
+            if (GameManager.instance.isEnd == false)
             {
-                rigid.AddForce(new Vector2(playerSpeed, jumpSpeed), ForceMode2D.Impulse);
+                PlayerMove();
+                PlayerJump();
             }
-            else if (Input.GetAxisRaw("Horizontal") < 0)
+        }
+
+
+        void PlayerMove()
+        {
+            if (Input.GetAxisRaw("Horizontal") > 0 && isCharge == false && isfolling == false)
             {
-                rigid.AddForce(new Vector2(-playerSpeed, jumpSpeed), ForceMode2D.Impulse);
+                transform.Translate(new Vector3(playerSpeed * Time.deltaTime, 0, 0));
+            }
+            if (Input.GetAxisRaw("Horizontal") < 0 && isCharge == false && isfolling == false)
+            {
+                transform.Translate(new Vector3(-playerSpeed * Time.deltaTime, 0, 0));
+            }
+
+            if (Input.GetKey(KeyCode.Space) && isfolling == false)
+            {
+                isCharge = true;
+                StartCoroutine(Jumpcharging());
+            }
+
+        }
+
+        void PlayerJump()
+        {
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                chargeParticle.Stop();
+                isCharge = false;
+                if (Input.GetAxisRaw("Horizontal") > 0)
+                {
+                    rigid.AddForce(new Vector2(playerSpeed, jumpSpeed), ForceMode2D.Impulse);
+                }
+                else if (Input.GetAxisRaw("Horizontal") < 0)
+                {
+                    rigid.AddForce(new Vector2(-playerSpeed, jumpSpeed), ForceMode2D.Impulse);
+                }
+                else
+                {
+                    rigid.AddForce(Vector2.up * jumpSpeed, ForceMode2D.Impulse);
+                }
+
+                jumpSpeed = 5;
+            }
+        }
+        IEnumerator CheakPos(float nowpos)
+        {
+
+            yield return new WaitForSeconds(0.001f);
+
+            float oldpos = GetComponent<Transform>().position.y;
+
+            if (nowpos != oldpos)
+            {
+                isfolling = true;
             }
             else
             {
-                rigid.AddForce(Vector2.up * jumpSpeed, ForceMode2D.Impulse);
+                isfolling = false;
             }
 
-            jumpSpeed = 5;
+
+
         }
-    }
-    IEnumerator CheakPos(float nowpos)
-    {
 
-        yield return new WaitForSeconds(0.001f);
-
-        float oldpos = GetComponent<Transform>().position.y;
-
-        if(nowpos != oldpos)
+        void CheakJump()
         {
-            isfolling = true;
-        }
-        else
-        {
-            isfolling = false;
+            float nowpos = transf.position.y;
+
+            StartCoroutine(CheakPos(nowpos));
+
         }
 
 
-
-    }
-
-    void CheakJump()
-    {
-        float nowpos = transf.position.y;
-        
-        StartCoroutine(CheakPos(nowpos));
-
-    }
-
-
-    IEnumerator Jumpcharging()
-    {
-        ParticleSystem.MainModule mainModule = chargeParticle.main;
-        Color mid = new Color(1f, 0.2f, 0f);
-        Color max = new Color(1f, 0.1f, 0f);
-        if (Input.GetKeyDown(KeyCode.Space) != false)
+        IEnumerator Jumpcharging()
         {
-            chargeParticle.Play();
-            do
+            ParticleSystem.MainModule mainModule = chargeParticle.main;
+            Color mid = new Color(1f, 0.2f, 0f);
+            Color max = new Color(1f, 0.1f, 0f);
+            if (Input.GetKeyDown(KeyCode.Space) != false)
             {
-                if(jumpSpeed > 9 && jumpSpeed < 15)
+                chargeParticle.Play();
+                do
                 {
-                    mainModule.startColor = mid;
-                }
-                else if(jumpSpeed == 15)
-                {
-                    mainModule.startColor = max;
-                }
-                if (jumpSpeed < maxJump)
-                {
-                    jumpSpeed++;
-                }
-                yield return new WaitForSeconds(0.25f);
-            } while (isCharge == true);
+                    if (jumpSpeed > 9 && jumpSpeed < 15)
+                    {
+                        mainModule.startColor = mid;
+                    }
+                    else if (jumpSpeed == 15)
+                    {
+                        mainModule.startColor = max;
+                    }
+                    if (jumpSpeed < maxJump)
+                    {
+                        jumpSpeed++;
+                    }
+                    yield return new WaitForSeconds(0.25f);
+                } while (isCharge == true);
+            }
+            yield return new WaitWhile(() => Input.GetKeyUp(KeyCode.Space) == true);
         }
-        yield return new WaitWhile(() => Input.GetKeyUp(KeyCode.Space) == true);
+
+
     }
 
-    
 }
